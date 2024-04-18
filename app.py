@@ -1,18 +1,16 @@
-from flask import Flask, request, jsonify,send_file
+from flask import Flask, request, jsonify,send_from_directory
 import sqlite3
 from flask_cors import CORS, cross_origin
 import os
 
-app = Flask(__name__)
-
+#app = Flask(_name_)
 # Distribution Version
-### app = Flask(__name__, static_folder='_frontend/users/dist', static_url_path='')
+app = Flask(_name_, static_folder='_frontend/users/dist', static_url_path='')
+# Manually set the environment variable
+app.config['ENV'] = 'development'
 # Add CORS support
-### CORS(app)
-### @app.route('/', methods=['GET'])
-### def defaultPage():
-###    return send_file(os.path.join(app.static_folder, 'index.html'))
-
+if app.config["ENV"] == "development":
+    CORS(app)
 # create the database first
 @app.route('/createDB')
 def index():
@@ -92,6 +90,13 @@ def delete_user(user_id):
     conn.close()
     response = jsonify({'message': 'User deleted successfully'})
     return response
-
-if __name__ == '__main__':
+# Route to serve the React Application
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
+if _name_ == '_main_':
     app.run(debug=True,host="0.0.0.0",port=5002)
